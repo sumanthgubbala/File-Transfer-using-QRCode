@@ -9,6 +9,7 @@ import subprocess
 
 PORT = 3000
 
+#Replace your existing directory
 DIRECTORY =  "E:\\final year\\"
 
 if not os.path.exists(DIRECTORY):
