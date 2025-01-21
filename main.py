@@ -4,49 +4,39 @@ import socket
 import os
 import webbrowser
 import pyqrcode
-from PIL import Image
-import subprocess
+from pyqrcode import QRCode
+import png
 
 PORT = 3000
 
-#Replace your existing directory
-DIRECTORY =  "E:\\final year\\"
+desktop ='E:/'
+os.chdir(desktop)
 
-if not os.path.exists(DIRECTORY):
-    os.makedirs(DIRECTORY)
+# creating a http request
+Handler = http.server.SimpleHTTPRequestHandler
+hostname =  socket.gethostname()
 
-class FileHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,directory=DIRECTORY,**kwargs)
+# finding the IP address of the PC
+s =socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(("8.8.8.8", 80))
+IP = "http://" + s.getsockname()[0] + ":" + str(PORT)
+link =IP
 
-def generate_qrcode(url,output_file="qrcode.png"):
-    qr = pyqrcode.create(url)
-    qr.png(output_file, scale=8)
-    print("QRCode generated")
-    os.startfile(output_file)
+# converts the IP address into a Qrcode
+url = pyqrcode.create(link)
+url.svg("myqr.svg", scale=8)
 
+# opens the Qrcode image in the web browser
+webbrowser.open("myqr.svg")
+
+
+# continuous stream of data between client and server
 def start_http_server():
-    with socketserver.TCPServer(("",PORT),FileHandler) as httpd:
-        print("Server started on port",PORT)
-
-        hostname = socket.gethostname()
-        ip = socket.gethostbyname(hostname)
-        print("Server IP:",ip)
-
-        url = f"http://{ip}:{PORT}/"
-        print(f"access files at :{url}")
-
-        generate_qrcode(url)
-
-        webbrowser.open(url)
-
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\nServer stopped")
-            httpd.server_close()
+    with socketserver.TCPServer(("",PORT),Handler) as httpd :
+        print("Starting server on port", PORT)
+        print("Connecting to ip", link)
+        httpd.serve_forever()
 
 if __name__ == "__main__":
-    print("Starting file transfer server.....")
-    print(f"place files in the {DIRECTORY} ")
+    
     start_http_server()
